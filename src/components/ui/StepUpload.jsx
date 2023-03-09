@@ -7,10 +7,11 @@ import { IMAGE_STATUS } from '../../helpers/helper'
 
 export const StepUpload = () => {
     const { setImageStatus, addOriginalImage, addModifiedImage } = useContext(ImageContext)
+    const { VITE_UPLOAD_PRESET, VITE_API_KEY_CLOUDINARY, VITE_CLOUD_NAME, VITE_API_URL_CLOUDINARY } = import.meta.env
 
     const cloudinary = new Cloudinary({
         cloud: {
-            cloudName: 'duyto1kmc'
+            cloudName: VITE_CLOUD_NAME
         },
         url: {
             secure: true
@@ -21,24 +22,23 @@ export const StepUpload = () => {
         acceptedFiles.map((fileUpload) => {
             const form = new FormData()
             form.append('file', fileUpload)
-            form.append('upload_preset', 'test-app')
+            form.append('upload_preset', VITE_UPLOAD_PRESET)
             form.append('timestamp', Date.now() / 1000)
-            form.append('api_key', '758681921823895')
-            fetch('https://api.cloudinary.com/v1_1/duyto1kmc/image/upload', {
+            form.append('api_key', VITE_API_KEY_CLOUDINARY)
+            fetch(VITE_API_URL_CLOUDINARY, {
                 method: 'POST',
                 body: form
             }).then(res => res.json())
                 .then(data => {
                     if (!data.error) {
                         const { public_id: publicId } = data
-                        // const imageWithoutBacground = cloudinary
-                        //     .image(publicId)
-                        //     .effect(backgroundRemoval())
+                        const imageWithoutBacground = cloudinary
+                            .image(publicId)
+                            .effect(backgroundRemoval())
 
                         setImageStatus(IMAGE_STATUS.DONE)
                         addOriginalImage(data)
-                        // addModifiedImage(imageWithoutBacground.toURL())
-                        addModifiedImage('https://res.cloudinary.com/duyto1kmc/image/upload/e_background_removal/ygw1ebznyipfecnik9jn?_a=ATCqVAA0')
+                        addModifiedImage(imageWithoutBacground.toURL())
                     }
                 })
                 .catch(err => console.log('Error', err))
